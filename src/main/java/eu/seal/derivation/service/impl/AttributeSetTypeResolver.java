@@ -98,7 +98,6 @@ public class AttributeSetTypeResolver {
 			for ( AttributeType bItem: pattern) {
 				if (aItem.getFriendlyName().equals(bItem.getFriendlyName())) {
 					checksum++;
-					System.out.println("Another one Bites the Dust --> " + aItem.getFriendlyName());
 				}
 			}
 		}
