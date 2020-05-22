@@ -51,19 +51,7 @@ public class TestAttributeSetResolver {
 	
 	
 	// Should resolve eidas when input is eidas
-    @Test
-    public void testPush() throws FileNotFoundException {
-    	
-    	Gson gson = new Gson();
-    	JsonReader reader = new JsonReader(new FileReader(authSetMockURL));
-    	AttributeSet dataReceived = gson.fromJson(reader, AttributeSet.class);
-    	
-    	JsonReader readerEidasPattern = new JsonReader(new FileReader(authSetMockURL));
-    	AttributeType[] dataPattern = gson.fromJson(readerEidasPattern, AttributeType[].class);
-    	
-    	Boolean resolved = AttributeSetTypeResolver.modelEquals(dataReceived, dataPattern);
-    	assertEquals(true, resolved);
-    }
+
     
     
     @Test
