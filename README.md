@@ -14,6 +14,7 @@ The following environmental variables need to be set prior to running the projec
 | STORE_PASS       | Password for the keystore containing the certificate.| 
 | HTTPSIG_CERT_ALIAS | Alias of the certificate used for the httpSig protocol. |
 | SESSION_MANAGER_URL| Location of the Session Manager microservice. |
+| CONFIGURATION_MANAGER_URL| Location of the Config Manager microservice. |
 | KEY_STORE_PATH   |Path to the keystore holding the RSA certificate used for signing JWTs. 
 
 
