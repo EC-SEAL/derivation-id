@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>eu.seal.derivation</groupId>
     <artifactId>derivation-id</artifactId>
-    <version>0.1.1.DEVELOPMENT</version>
+    <version>0.0.1.DEVELOPMENT</version>
     <packaging>jar</packaging>
     <!-- Project description -->
     <name>Seal Edugain IDP connector</name>

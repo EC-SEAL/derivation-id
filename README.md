@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/EC-SEAL/derivation-id.svg?branch=development)](https://travis-ci.org/EC-SEAL/derivation-id)
+
 # Derivation-id
 Seal derivation ID Module
 
@@ -16,6 +18,10 @@ The following environmental variables need to be set prior to running the projec
 | SESSION_MANAGER_URL| Location of the Session Manager microservice. |
 | CONFIGURATION_MANAGER_URL| Location of the Config Manager microservice. |
 | KEY_STORE_PATH   |Path to the keystore holding the RSA certificate used for signing JWTs. 
+| SAML_KEYSTORE_PATH |
+| SAML_KEYSTORE_PASS |
+| SAML_KEYSTORE_ID |
+| SAML_KEY_PASS |
 
 
 
