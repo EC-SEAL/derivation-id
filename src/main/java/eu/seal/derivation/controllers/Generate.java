@@ -14,7 +14,6 @@ import eu.seal.derivation.model.pojo.UpdateDataRequest;
 import eu.seal.derivation.service.HttpSignatureService;
 import eu.seal.derivation.service.KeyStoreService;
 import eu.seal.derivation.service.NetworkService;
-import eu.seal.derivation.service.SealMetadataService;
 import eu.seal.derivation.service.impl.AuthSetToDataSet;
 import eu.seal.derivation.service.impl.DerivationServiceImpl;
 import eu.seal.derivation.service.impl.HttpSignatureServiceImpl;
@@ -61,9 +60,9 @@ public class Generate {
 	private final DerivationServiceImpl derivationService;
 	private final SessionManagerClientImpl sessionManagerClient;
 	private final String sessionManagerURL; 
+	
 	@Autowired
-	public Generate(KeyStoreService keyServ,
-			SealMetadataService metadataServ) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, UnsupportedEncodingException, InvalidKeySpecException, IOException {
+	public Generate(KeyStoreService keyServ) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, UnsupportedEncodingException, InvalidKeySpecException, IOException {
 		this.keyServ = keyServ;
 		this.derivationService = new DerivationServiceImpl(1000);
 		this.sessionManagerURL = System.getenv("SESSION_MANAGER_URL");
@@ -74,19 +73,7 @@ public class Generate {
 		this.netServ = new NetworkServiceImpl(httpSigServ);
 	}
 
-	/**
-	 * Redirects an existing AP request to the IDP 
-	 * @param msToken
-	 * @param model
-	 * @param redirectAttrs
-	 * @return redirect :/saml/login (success) or :/authfail
-	 * @throws KeyStoreException
-	 * @throws IOException 
-	 * @throws NoSuchAlgorithmException 
-	 * @throws JsonMappingException 
-	 * @throws JsonParseException 
-	 */
-
+	
 	@RequestMapping(value = {"/idboot/generate"}, method = {RequestMethod.POST, RequestMethod.GET})
 	public String generate(@RequestParam(value = "msToken", required = true) String msToken, RedirectAttributes redirectAttrs, HttpServletRequest request) throws KeyStoreException, JsonParseException, JsonMappingException, NoSuchAlgorithmException, IOException {
 

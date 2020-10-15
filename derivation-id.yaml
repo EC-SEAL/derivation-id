@@ -2,14 +2,9 @@ swagger: '2.0' #Be aware of the version.
 info:
   title: Derivation Microservice Spec
   version: 0.0.2
-  description: "This document contains the formal specification of all standard module interfaces in SEAL Service. Take into account that parameters marked as cookie type, will instead be passed through the session object**
+  description: "This document contains the formal specification of DERIVATION ID interface in SEAL Service. Take into account that parameters marked as cookie type, will instead be passed through the session object**
   "
-  
-
-
-
-  
-
+ 
 
 tags:
 
@@ -46,9 +41,109 @@ paths:
           description: "Error bootstrapping identity"
 
 
+  /idboot/update/{datasetId}:
+    post:
+      tags:
+        - IDBootstrapping
+      summary: Refresh a derived identity in session (if persistent identity, this can be idle).
+      description: _
+      consumes:
+      - "application/x-www-form-urlencoded"
+      produces:
+      - "application/json"
+      parameters:
+        - name: "msToken"
+          in: "formData"
+          description: The security token for ms to ms calls
+          required: true
+          type: string
+        - name: "datasetId"
+          in: "path"
+          required: true
+          type: string
+      responses:
+        200:
+          description: "Identity refreshed"
+          schema:
+            $ref: "#/definitions/dataSet" 
+        404:
+          description: "Error refreshing identity"
           
-  
-  
+          
+  /idboot/update/{datasetId}/credentials:
+    post:
+      tags:
+        - IDBootstrapping
+      summary: Refresh the associated authentication credentials (if any) of a derived identity in session (if no credentials, this can be idle). Do not confuse with VCs
+      description: _
+      consumes:
+      - "application/x-www-form-urlencoded"
+      parameters:
+        - name: "msToken"
+          in: "formData"
+          description: The security token for ms to ms calls
+          required: true
+          type: string
+        - name: "datasetId"
+          in: "path"
+          required: true
+          type: string
+      responses:
+        200:
+          description: "Credetials refreshed"
+        404:
+          description: "Error refreshing credentials"
+
+
+  /idboot/delete/{datasetId}:
+    post:
+      tags:
+        - IDBootstrapping
+      summary: Delete a derived identity in session.
+      description: _
+      consumes:
+      - "application/x-www-form-urlencoded"
+      parameters:
+        - name: "msToken"
+          in: "formData"
+          description: The security token for ms to ms calls
+          required: true
+          type: string
+        - name: "datasetId"
+          in: "path"
+          required: true
+          type: string
+      responses:
+        200:
+          description: "Identity deleted"
+        404:
+          description: "Error deleting identity"
+
+
+  /idboot/revoke:
+    post:
+      tags:
+        - IDBootstrapping
+      summary: Revoke a derived identity in session.
+      description: _
+      consumes:
+      - "application/x-www-form-urlencoded"
+      parameters:
+        - name: "msToken"
+          in: "formData"
+          description: The security token for ms to ms calls
+          required: true
+          type: string
+        - name: "datasetId"
+          in: "formData"
+          required: true
+          type: string
+      responses:
+        200:
+          description: "Identity revoked"
+        404:
+          description: "Error revoking identity"
+
   
       
 definitions:
@@ -84,11 +179,7 @@ definitions:
         $ref: '#/definitions/MngrSessionTO'
     title: SessionMngrResponse
 
-
-
-        
-
-        
+       
   attributeType:
     description: Contents of an attribute item.
     type: object
@@ -311,7 +402,7 @@ definitions:
 
   dataStore:
     type: object
-    description: Represents a clear, encrypted and/or signed data set.
+    description: OLD OLDRepresents a clear, encrypted and/or signed data set.
     properties:
       id:
         description: Unique identifier of the set
