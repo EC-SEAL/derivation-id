@@ -1,11 +1,13 @@
 package eu.seal.derivation.service.impl;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.Key;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +21,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import eu.seal.derivation.enums.ResponseCode;
 import eu.seal.derivation.controllers.Generate;
 import eu.seal.derivation.model.pojo.SessionMngrResponse;
 import eu.seal.derivation.service.HttpSignatureService;
@@ -65,6 +68,77 @@ public class SessionManagerClientImpl {
 			e.printStackTrace();
 			return new SessionMngrResponse();
 		}
+	}
+	
+	public Object readDS(String sessionId) throws UnrecoverableKeyException, KeyStoreException, FileNotFoundException, NoSuchAlgorithmException, CertificateException, InvalidKeySpecException, IOException
+	{
+		String service = "/sm/new/get";
+		//HashMap<String, Object> sessionVbles = new HashMap<String, Object>();
+		Object sessionVble = new Object();
+		
+		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+	    urlParameters.add(new NameValuePair("sessionId",sessionId));
+	    
+	    SessionMngrResponse smResponse = null;
+	    try {
+	    	LOG.info("Sending new/get ...");
+	    	//response = network.sendGet(hostURL, service, urlParameters);
+	    	smResponse = netServ.sendGetSMResponse(sessionMngrURL, service, urlParameters, 1);
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    //log.info("Response new/getSessionData:<"+smResponse.toString()+">");
+	    if (smResponse.getCode()==ResponseCode.OK)
+	    {
+	    	//sessionVbles = (HashMap<String, Object>) smResponse.getSessionData().getSessionVariables();
+	    	sessionVble = smResponse.getAdditionalData();
+	    	
+	    	LOG.info("sessionVble: "+ sessionVble.toString());
+	    }
+	    
+	    
+	    //return sessionVbles.get(variableName);
+	    return sessionVble;
+	}
+	
+	public Object getDataSet(String sessionId, String dataSetId) throws UnrecoverableKeyException, KeyStoreException, FileNotFoundException, NoSuchAlgorithmException, CertificateException, InvalidKeySpecException, IOException
+	{
+		String service = "/sm/new/get";
+		//HashMap<String, Object> sessionVbles = new HashMap<String, Object>();
+		Object sessionVble = new Object();
+		
+		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+	    urlParameters.add(new NameValuePair("sessionId",sessionId));
+	    urlParameters.add(new NameValuePair("id",dataSetId));
+	    
+	    SessionMngrResponse smResponse = null;
+	    try {
+	    	LOG.info("Sending new/get DataSet ...");
+	    	//response = network.sendGet(hostURL, service, urlParameters);
+	    	smResponse = netServ.sendGetSMResponse(sessionMngrURL, service, urlParameters, 1);
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    //log.info("Response new/getSessionData:<"+smResponse.toString()+">");
+	    if (smResponse.getCode()==ResponseCode.OK)
+	    {
+	    	//sessionVbles = (HashMap<String, Object>) smResponse.getSessionData().getSessionVariables();
+	    	sessionVble = smResponse.getAdditionalData();
+	    	
+	    	LOG.info("sessionVble: "+ sessionVble.toString());
+	    }
+	    
+	    
+	    //return sessionVbles.get(variableName);
+	    return sessionVble;
 	}
 
 }

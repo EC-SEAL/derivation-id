@@ -64,7 +64,7 @@ public class Generate {
 	@Autowired
 	public Generate(KeyStoreService keyServ) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, UnsupportedEncodingException, InvalidKeySpecException, IOException {
 		this.keyServ = keyServ;
-		this.derivationService = new DerivationServiceImpl(1000);
+		this.derivationService = new DerivationServiceImpl(Integer.parseInt(System.getenv("EXPIRATION_WINDOW")));
 		this.sessionManagerURL = System.getenv("SESSION_MANAGER_URL");
 		this.sessionManagerClient = new SessionManagerClientImpl(keyServ, sessionManagerURL);
 		Key signingKey = this.keyServ.getSigningKey();
@@ -77,13 +77,19 @@ public class Generate {
 	@RequestMapping(value = {"/idboot/generate"}, method = {RequestMethod.POST, RequestMethod.GET})
 	public String generate(@RequestParam(value = "msToken", required = true) String msToken, RedirectAttributes redirectAttrs, HttpServletRequest request) throws KeyStoreException, JsonParseException, JsonMappingException, NoSuchAlgorithmException, IOException {
 
-		List<NameValuePair> requestParams = new ArrayList<NameValuePair>();
-		requestParams.add(new NameValuePair("token", msToken));
-		ObjectMapper mapper = new ObjectMapper();
-		String rspValidate = netServ.sendGet(sessionManagerURL, "/sm/validateToken", requestParams, 1);
-		SessionMngrResponse resp = mapper.readValue(rspValidate, SessionMngrResponse.class);
+//		List<NameValuePair> requestParams = new ArrayList<NameValuePair>();
+//		requestParams.add(new NameValuePair("token", msToken));
+//		ObjectMapper mapper = new ObjectMapper();
+//		String rspValidate = netServ.sendGet(sessionManagerURL, "/sm/validateToken", requestParams, 1);
+//		SessionMngrResponse resp = mapper.readValue(rspValidate, SessionMngrResponse.class);
+		
+		SessionMngrResponse resp = sessionManagerClient.validateToken(null, msToken);
 		
 		if (resp.getCode().toString().equals("OK") && StringUtils.isEmpty(resp.getError())) {
+			
+			derivationService.generate();
+			
+			/*
 			String sealSessionId = resp.getSessionData().getSessionId();
 			
 			SessionMngrResponse respGet = sessionManagerClient.getSingleParam("sessionId", sealSessionId);
@@ -103,6 +109,8 @@ public class Generate {
 			
 			requestParams.clear();
 			requestParams.add(new NameValuePair("sessionId", sealSessionId));
+			*/
+			
 			
 		} else {
 			LOG.error(resp.getError());

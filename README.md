@@ -22,6 +22,7 @@ The following environmental variables need to be set prior to running the projec
 | SAML_KEYSTORE_PASS |
 | SAML_KEYSTORE_ID |
 | SAML_KEY_PASS |
+| EXPIRATION_WINDOW | Expiration time in "day of the year" that the linkService is expected to be received.
 
 
 

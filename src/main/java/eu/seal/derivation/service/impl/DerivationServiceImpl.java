@@ -14,11 +14,11 @@ import eu.seal.derivation.model.pojo.LinkRequest;
 
 public class DerivationServiceImpl {
 	
-	//// Constants ///
+	//// Constants ///    // ****TOASK: environment variables???
 	
 	// Seal attributes
 	private static final String uuidFriendlyName = "sealUUID";
-	private static final String uuidAttrName = "https://github.com/EC-SEAL/derivationID/wiki/identifiers/sealUUID\",";	
+	private static final String uuidAttrName = "https://github.com/EC-SEAL/derivationID/wiki/identifiers/sealUUID\",";	// ****TOASK: this does not exist!!
 	private final String attributeEncoding = "plain";
 	private final boolean mandatory = true;
 	
@@ -41,9 +41,31 @@ public class DerivationServiceImpl {
 	 * Constructor, creates a new derivation service 
 	 * @param expirationWindow Expiration time in DAY_OF_YEAR that the linkService is expected to be received.
 	 */
-
 	public DerivationServiceImpl(int expirationWindow) {
+		
+		// ****TOASK: how to set the expirationWindow??
 		this.expirationWindow = expirationWindow;
+	}
+	
+	public void generate() {
+		
+		// Get the current dataStore
+		
+		// Generate UUID4
+		
+		// Add the sealUUID dataSet to the dataStore	
+		
+		// Create a new linked identity dataSet request with the sealUUID dataSet
+		// ****TOASK: linkRequest or just a linked identity? Linked identity, I think
+		// ****TOASK: link to the current authenticatedSubject? Yes, I think
+		
+		// Add the linked Id dataSet to the dataStore
+		
+		// Update the authenticatedSubject with the dataSet just generated
+		
+		// Redirect to ClientCallbackAddr
+		// ****TOASK: to confirm
+		
 	}
 	
 	/**
@@ -63,6 +85,8 @@ public class DerivationServiceImpl {
 		return resultLinkRequest;
 	}
 	
+	
+	
 	/**
 	 * Generates a new derived DataSet 
 	 * @return Seal DataSet, formed by 
@@ -73,7 +97,7 @@ public class DerivationServiceImpl {
         Date expiration = getExpirationDate(issued, expirationWindow);
         List<AttributeType> attributes = new ArrayList<>();
 	
-        derivedDataSet.setId(UUID.randomUUID().toString());
+        derivedDataSet.setId(UUID.randomUUID().toString());   // TODO: random UUIDv4 generation module!!??
 		derivedDataSet.setType(derivedDatasetType);
 		derivedDataSet.setCategories(derivedIdcategories);
 		derivedDataSet.setIssuerId(issuerId);

@@ -5,6 +5,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import org.apache.commons.httpclient.NameValuePair;
 
+import eu.seal.derivation.model.pojo.SessionMngrResponse;
+
 
 public interface NetworkService {
 
@@ -14,4 +16,5 @@ public interface NetworkService {
 
     public String sendPostBody(String hostUrl, String uri, Object postBody, String contentType, int attempt) throws IOException, NoSuchAlgorithmException;
 
+    public SessionMngrResponse sendGetSMResponse(String hostUrl, String uri, List<NameValuePair> urlParameters, int attempt) throws IOException, NoSuchAlgorithmException;
 }
