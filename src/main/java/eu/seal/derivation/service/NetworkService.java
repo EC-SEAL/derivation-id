@@ -17,4 +17,7 @@ public interface NetworkService {
     public String sendPostBody(String hostUrl, String uri, Object postBody, String contentType, int attempt) throws IOException, NoSuchAlgorithmException;
 
     public SessionMngrResponse sendGetSMResponse(String hostUrl, String uri, List<NameValuePair> urlParameters, int attempt) throws IOException, NoSuchAlgorithmException;
+    
+	public String sendNewPostBody(String hostUrl, String uri, Object postBody, String contentType, int attempt)
+			throws IOException, NoSuchAlgorithmException;
 }

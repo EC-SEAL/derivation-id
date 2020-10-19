@@ -1,5 +1,8 @@
 package eu.seal.derivation.service.impl;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -7,12 +10,17 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-import eu.seal.derivation.model.pojo.AttributeSet;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import eu.seal.derivation.model.pojo.AttributeType;
 import eu.seal.derivation.model.pojo.DataSet;
 import eu.seal.derivation.model.pojo.LinkRequest;
 
+
 public class DerivationServiceImpl {
+	
+	private SessionManagerClientImpl sessionManagerClient;
+	
 	
 	//// Constants ///    // ****TOASK: environment variables???
 	
@@ -47,24 +55,40 @@ public class DerivationServiceImpl {
 		this.expirationWindow = expirationWindow;
 	}
 	
-	public void generate() {
+	public void generate(String sessionId) {
+		try {
 		
-		// Get the current dataStore
+			// Get the current dataStore. NOT NECESSARY
+			
+			// Generate UUID4:
+			// createNewDataSet()
+			DataSet derivedDataSet = createNewDataSet();
+			
+			// Add the sealUUID dataSet to the dataStore		
+			String objectId = getUniqueIdForDerivation(); //TODO
+			sessionManagerClient.updateDatastore(sessionId, objectId, derivedDataSet);
+			
+			Object objAuthenticatedSubject = null;
+			DataSet authenticatedSubject = null;
+			objAuthenticatedSubject = sessionManagerClient.readVariable(sessionId, "authenticatedSubject");
+			authenticatedSubject = (new ObjectMapper()).readValue(objAuthenticatedSubject.toString(),DataSet.class);
+			
+			// Create a new linked identity dataSet request with the sealUUID dataSet
+			// Linked to the current authenticatedSubject
+			
+			// Add the linked Id dataSet to the dataStore
+			LinkRequest linkedRequest = getLinkedRequest (derivedDataSet, authenticatedSubject); // Just linked
+			sessionManagerClient.updateDatastore(sessionId, linkedRequest.getId(), linkedRequest);
+			
+			// Update the authenticatedSubject with the dataSet just generated
+			sessionManagerClient.updateSessionVariables(sessionId, sessionId, "authenticatedSubject", derivedDataSet);
+			
+			// Redirect to ClientCallbackAddr
+			// ****TOASK: to confirm
 		
-		// Generate UUID4
-		
-		// Add the sealUUID dataSet to the dataStore	
-		
-		// Create a new linked identity dataSet request with the sealUUID dataSet
-		// ****TOASK: linkRequest or just a linked identity? Linked identity, I think
-		// ****TOASK: link to the current authenticatedSubject? Yes, I think
-		
-		// Add the linked Id dataSet to the dataStore
-		
-		// Update the authenticatedSubject with the dataSet just generated
-		
-		// Redirect to ClientCallbackAddr
-		// ****TOASK: to confirm
+		} catch (Exception e){
+			
+		}
 		
 	}
 	
@@ -74,14 +98,51 @@ public class DerivationServiceImpl {
 	 * @param dataSetA second dataSet to be included in the LinkRequest
 	 * @return LinkRequest Object linking the existing dataSet to the recently created Dataset 
 	 */
-	public LinkRequest getLinkedRequest(DataSet ds) {
+	public LinkRequest getLinkedRequest(DataSet dsA, DataSet dsB) {
 		LinkRequest resultLinkRequest = new LinkRequest();
+		
+		
+		//TODO: sort dsA and dsB
+		DataSet datasetA = new DataSet();
+		DataSet datasetB = new DataSet();
+		if (dsA.getSubjectId().compareTo(dsB.getSubjectId()) < 0) {
+			datasetA = dsA;
+			datasetB = dsB;
+		}
+		else if (dsA.getSubjectId().compareTo(dsB.getSubjectId()) > 0) {
+			datasetA = dsB;
+			datasetB = dsA;
+		}
+		else //equals
+			if (dsA.getIssuerId().compareTo(dsB.getIssuerId()) <= 0) {
+				datasetA = dsA;
+				datasetB = dsB;
+			}
+			else {
+				datasetA = dsB;
+				datasetB = dsA;
+			}
+		resultLinkRequest.setDatasetA(datasetA);
+		resultLinkRequest.setDatasetB(datasetB);
+		
+		try {
+			resultLinkRequest.setId("urn:mace:project-seal.eu:link:" + 
+					URLEncoder.encode("SEAL id-boot", StandardCharsets.UTF_8.toString()) + ":" + // TO ASK
+					//"LLoA" + ":" +
+					URLEncoder.encode(datasetA.getSubjectId(), StandardCharsets.UTF_8.toString()) + ":" + 
+					URLEncoder.encode(datasetA.getIssuerId(), StandardCharsets.UTF_8.toString())  + ":" +  
+					URLEncoder.encode(datasetB.getSubjectId(), StandardCharsets.UTF_8.toString()) + ":" + 
+					URLEncoder.encode(datasetB.getIssuerId(), StandardCharsets.UTF_8.toString()));
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		resultLinkRequest.setIssuer(issuer);
 		resultLinkRequest.setLloa(loa);
 		resultLinkRequest.setIssued(new Date().toString());
 		resultLinkRequest.setType(linkRequestType);
-		resultLinkRequest.setDatasetA(createNewDataSet());
-		resultLinkRequest.setDatasetB(ds);
+		
 		return resultLinkRequest;
 	}
 	
@@ -135,6 +196,10 @@ public class DerivationServiceImpl {
         // manipulate date
         c.add(Calendar.DAY_OF_YEAR, validityWindow);
         return c.getTime();
+	}
+	
+	private String getUniqueIdForDerivation () {
+		return "***this is a derived dataSet id";
 	}
 	
 	

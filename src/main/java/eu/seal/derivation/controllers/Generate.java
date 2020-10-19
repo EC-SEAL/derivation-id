@@ -87,11 +87,10 @@ public class Generate {
 		
 		if (resp.getCode().toString().equals("OK") && StringUtils.isEmpty(resp.getError())) {
 			
-			derivationService.generate();
-			
+			String sessionId = resp.getSessionData().getSessionId();
+			derivationService.generate(sessionId);
+
 			/*
-			String sealSessionId = resp.getSessionData().getSessionId();
-			
 			SessionMngrResponse respGet = sessionManagerClient.getSingleParam("sessionId", sealSessionId);
 			
 			String dataStoreString = (String) respGet.getSessionData().getSessionVariables().get("dataStore");

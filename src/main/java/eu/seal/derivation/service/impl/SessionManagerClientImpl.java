@@ -10,6 +10,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,10 +24,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import eu.seal.derivation.enums.ResponseCode;
 import eu.seal.derivation.controllers.Generate;
+import eu.seal.derivation.model.pojo.NewUpdateDataRequest;
 import eu.seal.derivation.model.pojo.SessionMngrResponse;
 import eu.seal.derivation.service.HttpSignatureService;
 import eu.seal.derivation.service.KeyStoreService;
 import eu.seal.derivation.service.NetworkService;
+import eu.seal.derivation.model.pojo.UpdateDataRequest;
+
 
 public class SessionManagerClientImpl {
 	
@@ -35,6 +39,9 @@ public class SessionManagerClientImpl {
 	private final KeyStoreService keyServ;
 	private final String sessionMngrURL;
 	ObjectMapper mapper = new ObjectMapper();
+	
+	private final String URIUPDATENEWSESSION = "/sm/new/add";
+	private final String URIUPDATESESSION = "/sm/updateSessionData";
 	
 	public SessionManagerClientImpl(KeyStoreService keyServ, String sessionMngrURL) throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException, InvalidKeySpecException, IOException {
 		this.keyServ = keyServ;
@@ -139,6 +146,72 @@ public class SessionManagerClientImpl {
 	    
 	    //return sessionVbles.get(variableName);
 	    return sessionVble;
+	}
+	
+	/**
+	 * Updates the dataStore session Variable
+	 */	
+	
+	public String updateDatastore(String sessionId, String objectId, Object updateObject) throws IOException, NoSuchAlgorithmException {
+        ObjectMapper mapper = new ObjectMapper();
+        String stringifiedObject = mapper.writeValueAsString(updateObject);
+
+            NewUpdateDataRequest newReq = new NewUpdateDataRequest();
+            newReq.setId(objectId);
+            newReq.setSessionId(sessionId);
+            newReq.setType("dataSet");
+            newReq.setData(stringifiedObject);
+            String result = netServ.sendNewPostBody(sessionMngrURL, URIUPDATENEWSESSION, newReq, "application/json", 1);
+            
+            LOG.info("Result" + result);          
+            LOG.info("session " + sessionId + " updated NEW API Session succesfully  with objectID" + objectId + "  with user attributes " + stringifiedObject);
+
+        return "ok";
+    }
+	
+	public String updateSessionVariables(String sessionId, String objectId, String variableName, Object updateObject) throws IOException, NoSuchAlgorithmException {
+        ObjectMapper mapper = new ObjectMapper();
+        String stringifiedObject = mapper.writeValueAsString(updateObject);
+
+        UpdateDataRequest updateReq = new UpdateDataRequest(sessionId, variableName, stringifiedObject);
+        SessionMngrResponse resp = mapper.readValue(netServ.sendPostBody(sessionMngrURL, URIUPDATESESSION, updateReq, "application/json", 1), SessionMngrResponse.class);
+        LOG.info("updateSessionData " + resp.getCode().toString());
+        if (!resp.getCode().toString().equals("OK")) {
+            LOG.error("ERROR: " + resp.getError());
+            return "error";
+        }
+        
+        return "ok";
+    }
+	
+	public Object readVariable(String sessionId, String variableName) throws UnrecoverableKeyException, KeyStoreException, FileNotFoundException, NoSuchAlgorithmException, CertificateException, InvalidKeySpecException, IOException
+	{
+		String service = "/sm/getSessionData";
+		HashMap<String, Object> sessionVbles = new HashMap<String, Object>();
+
+		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+	    urlParameters.add(new NameValuePair("sessionId",sessionId));
+	    urlParameters.add(new NameValuePair("variableName",variableName));
+	     
+	    SessionMngrResponse smResponse = null;
+	    try {
+	    	System.out.println("Enviando getSessionData");
+	    	//response = network.sendGet(hostURL, service, urlParameters);
+	    	smResponse = netServ.sendGetSMResponse(sessionMngrURL, service, urlParameters, 1);
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    System.out.println("Response getSessionData:<"+smResponse.toString()+">");
+	    if (smResponse.getCode()== ResponseCode.OK)
+	    {
+	    	sessionVbles = (HashMap<String, Object>) smResponse.getSessionData().getSessionVariables();
+	    	
+	    }
+	    return sessionVbles.get(variableName);
 	}
 
 }
