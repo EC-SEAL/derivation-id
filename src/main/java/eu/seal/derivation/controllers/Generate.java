@@ -64,7 +64,7 @@ public class Generate {
 	@Autowired
 	public Generate(KeyStoreService keyServ) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, UnsupportedEncodingException, InvalidKeySpecException, IOException {
 		this.keyServ = keyServ;
-		this.derivationService = new DerivationServiceImpl(Integer.parseInt(System.getenv("EXPIRATION_WINDOW")));
+		this.derivationService = new DerivationServiceImpl(System.getenv("EXPIRATION_WINDOW") == null ? Integer.parseInt("7"):Integer.parseInt(System.getenv("EXPIRATION_WINDOW")));
 		this.sessionManagerURL = System.getenv("SESSION_MANAGER_URL");
 		this.sessionManagerClient = new SessionManagerClientImpl(keyServ, sessionManagerURL);
 		Key signingKey = this.keyServ.getSigningKey();

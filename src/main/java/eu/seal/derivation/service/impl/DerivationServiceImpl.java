@@ -22,11 +22,11 @@ public class DerivationServiceImpl {
 	private SessionManagerClientImpl sessionManagerClient;
 	
 	
-	//// Constants ///    // ****TOASK: environment variables???
+	//// Constants ///
 	
 	// Seal attributes
 	private static final String uuidFriendlyName = "sealUUID";
-	private static final String uuidAttrName = "https://github.com/EC-SEAL/derivationID/wiki/identifiers/sealUUID\",";	// ****TOASK: this does not exist!!
+	private static final String uuidAttrName = "http://project-seal.eu/2020/id/sealUUID";	
 	private final String attributeEncoding = "plain";
 	private final boolean mandatory = true;
 	
@@ -51,7 +51,7 @@ public class DerivationServiceImpl {
 	 */
 	public DerivationServiceImpl(int expirationWindow) {
 		
-		// ****TOASK: how to set the expirationWindow??
+		// By default, a week
 		this.expirationWindow = expirationWindow;
 	}
 	
@@ -65,7 +65,7 @@ public class DerivationServiceImpl {
 			DataSet derivedDataSet = createNewDataSet();
 			
 			// Add the sealUUID dataSet to the dataStore		
-			String objectId = getUniqueIdForDerivation(); //TODO
+			String objectId = getUniqueIdForDerivation(derivedDataSet); //TODO : ****TOASK
 			sessionManagerClient.updateDatastore(sessionId, objectId, derivedDataSet);
 			
 			Object objAuthenticatedSubject = null;
@@ -102,7 +102,7 @@ public class DerivationServiceImpl {
 		LinkRequest resultLinkRequest = new LinkRequest();
 		
 		
-		//TODO: sort dsA and dsB
+		// Sort dsA and dsB
 		DataSet datasetA = new DataSet();
 		DataSet datasetB = new DataSet();
 		if (dsA.getSubjectId().compareTo(dsB.getSubjectId()) < 0) {
@@ -138,10 +138,10 @@ public class DerivationServiceImpl {
 			e.printStackTrace();
 		}
 		
-		resultLinkRequest.setIssuer(issuer);
-		resultLinkRequest.setLloa(loa);
+		resultLinkRequest.setIssuer(System.getenv("ISSUER") == null ? issuer : System.getenv("ISSUER"));
+		resultLinkRequest.setLloa(System.getenv("LOA") == null ? loa : System.getenv("LOA"));
 		resultLinkRequest.setIssued(new Date().toString());
-		resultLinkRequest.setType(linkRequestType);
+		resultLinkRequest.setType(System.getenv("LINK_REQUEST_TYPE") == null ? linkRequestType :System.getenv("LINK_REQUEST_TYPE"));
 		
 		return resultLinkRequest;
 	}
@@ -158,17 +158,18 @@ public class DerivationServiceImpl {
         Date expiration = getExpirationDate(issued, expirationWindow);
         List<AttributeType> attributes = new ArrayList<>();
 	
-        derivedDataSet.setId(UUID.randomUUID().toString());   // TODO: random UUIDv4 generation module!!??
-		derivedDataSet.setType(derivedDatasetType);
-		derivedDataSet.setCategories(derivedIdcategories);
-		derivedDataSet.setIssuerId(issuerId);
-		derivedDataSet.setSubjectId(subjectId);
-		derivedDataSet.setLoa(loa);
+        derivedDataSet.setId("DRV_" + UUID.randomUUID().toString());   // TODO: random UUIDv4 generation module!!??
+		derivedDataSet.setType(System.getenv("DERIVED_DATASET_TYPE") == null ? derivedDatasetType : System.getenv("DERIVED_DATASET_TYPE"));
+		derivedDataSet.setCategories(System.getenv("DERIVED_ID_CATEGORIES") == null ? derivedIdcategories : Arrays.asList(System.getenv("DERIVED_ID_CATEGORIES")));
+		derivedDataSet.setIssuerId(System.getenv("ISSUER_ID") == null ? issuerId : System.getenv("ISSUER_ID"));
+		derivedDataSet.setSubjectId(System.getenv("SUBJECT_ID") == null ? subjectId : System.getenv("SUBJECT_ID"));
+		derivedDataSet.setLoa(System.getenv("LOA")== null ? loa : System.getenv("LOA"));
 		derivedDataSet.setIssued(issued.toString());
 		derivedDataSet.setExpiration(expiration.toString());
 		attributes.add(sealUUIDAttributeType());
 		derivedDataSet.setAttributes(attributes);
 		return derivedDataSet;
+		
 	}
 	
 	/**
@@ -179,14 +180,16 @@ public class DerivationServiceImpl {
 	public AttributeType sealUUIDAttributeType() {
 		AttributeType sealUUIDAttributeType =  new AttributeType();
 		String[] values = new String[1];
-		sealUUIDAttributeType.setName(uuidAttrName);
-		sealUUIDAttributeType.setFriendlyName(uuidFriendlyName);
-		sealUUIDAttributeType.setEncoding("plain");
-		sealUUIDAttributeType.setLanguage(language);
-		sealUUIDAttributeType.setIsMandatory(mandatory);
+		sealUUIDAttributeType.setName(System.getenv("UUID_ATTR_NAME")== null ? uuidAttrName : System.getenv("UUID_ATTR_NAME"));
+		sealUUIDAttributeType.setFriendlyName(System.getenv("UUID_FRIENDLY_NAME")== null ? uuidFriendlyName : System.getenv("UUID_FRIENDLY_NAME"));
+		sealUUIDAttributeType.setEncoding(System.getenv("ATTRIBUTE_ENCODING")== null ? attributeEncoding : System.getenv("ATTRIBUTE_ENCODING"));
+		sealUUIDAttributeType.setLanguage(System.getenv("UUID_FRIENDLY_NAME")== null ? language : System.getenv("UUID_FRIENDLY_NAME"));
+		sealUUIDAttributeType.setIsMandatory(System.getenv("MANDATORY")== null ? mandatory : (System.getenv("MANDATORY").toLowerCase().contains("true"))? true : false);
 		values[0]=UUID.randomUUID().toString();
 		sealUUIDAttributeType.setValues(values);
 		return sealUUIDAttributeType;
+		
+		
 	}
 	
 	private Date getExpirationDate(Date issuanceDate, int validityWindow) {
@@ -198,8 +201,26 @@ public class DerivationServiceImpl {
         return c.getTime();
 	}
 	
-	private String getUniqueIdForDerivation () {
-		return "***this is a derived dataSet id";
+	private String getUniqueIdForDerivation (DataSet drvDataSet) {
+		String uniqueId= "urn:mace:project-seal.eu:id:dataset:";
+		try {
+			String moduleId = System.getenv("SENDER_ID") == null ? "uuid_ms001": System.getenv("SENDER_ID");
+			uniqueId = uniqueId + 
+					URLEncoder.encode(moduleId, StandardCharsets.UTF_8.toString());
+		
+			String auxIssuer = drvDataSet.getIssuerId();
+			String auxSubject = drvDataSet.getSubjectId();
+			
+			uniqueId = uniqueId + ":" + 
+					URLEncoder.encode(auxIssuer, StandardCharsets.UTF_8.toString()) + ":" + 
+					URLEncoder.encode(auxSubject, StandardCharsets.UTF_8.toString());
+		
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		return uniqueId;
 	}
 	
 	
