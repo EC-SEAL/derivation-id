@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.lang3.StringUtils;
@@ -41,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -75,45 +77,30 @@ public class Generate {
 
 	
 	@RequestMapping(value = {"/idboot/generate"}, method = {RequestMethod.POST, RequestMethod.GET})
-	public String generate(@RequestParam(value = "msToken", required = true) String msToken, RedirectAttributes redirectAttrs, HttpServletRequest request) throws KeyStoreException, JsonParseException, JsonMappingException, NoSuchAlgorithmException, IOException {
-
-//		List<NameValuePair> requestParams = new ArrayList<NameValuePair>();
-//		requestParams.add(new NameValuePair("token", msToken));
-//		ObjectMapper mapper = new ObjectMapper();
-//		String rspValidate = netServ.sendGet(sessionManagerURL, "/sm/validateToken", requestParams, 1);
-//		SessionMngrResponse resp = mapper.readValue(rspValidate, SessionMngrResponse.class);
+	public String generate(@RequestParam(value = "msToken", required = true) String msToken, RedirectAttributes redirectAttrs, HttpServletRequest request, 
+			HttpServletResponse response,
+			Model model
+			) throws KeyStoreException, JsonParseException, JsonMappingException, NoSuchAlgorithmException, IOException {
 		
-		SessionMngrResponse resp = sessionManagerClient.validateToken(null, msToken);
+		try {
 		
-		if (resp.getCode().toString().equals("OK") && StringUtils.isEmpty(resp.getError())) {
+			SessionMngrResponse resp = sessionManagerClient.validateToken(null, msToken);
 			
-			String sessionId = resp.getSessionData().getSessionId();
-			derivationService.generate(sessionId);
-
-			/*
-			SessionMngrResponse respGet = sessionManagerClient.getSingleParam("sessionId", sealSessionId);
+			if (resp.getCode().toString().equals("OK") && StringUtils.isEmpty(resp.getError())) {
+				
+				String sessionId = resp.getSessionData().getSessionId();
+				derivationService.generate(sessionId);
+	
+				derivationService.returnSuccess (sessionId, model);
+				
+			} else {
+				LOG.error(resp.getError());
+				redirectAttrs.addFlashAttribute("errorMsg", "Error validating token! " + resp.getError()); // TODO: what is this?
+			}
 			
-			String dataStoreString = (String) respGet.getSessionData().getSessionVariables().get("dataStore");
-			String authenticationSetString = (String) respGet.getSessionData().getSessionVariables().get("authenticationSet");	
-			
-			List <DataSet> dsArrayList = new ArrayList();
-			
-			DataStore datastore = new DataStore();
-			AttributeSet authenticationSet = new AttributeSet();
-			
-			DataSet associatedDataSet = AuthSetToDataSet.resolveAttributeSet(authenticationSet);
-			LinkRequest result= derivationService.getLinkedRequest(associatedDataSet);
-			
-			UpdateDataRequest updateReqAuthSet = new UpdateDataRequest(sealSessionId, "LinkRequest", mapper.writeValueAsString(result));
-			
-			requestParams.clear();
-			requestParams.add(new NameValuePair("sessionId", sealSessionId));
-			*/
-			
-			
-		} else {
-			LOG.error(resp.getError());
-			redirectAttrs.addFlashAttribute("errorMsg", "Error validating token! " + resp.getError());
+		} catch (Exception e) {
+			// TODO
+			// derivationService.returnError
 		}
 
 		return "Hello";

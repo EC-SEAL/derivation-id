@@ -10,6 +10,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ui.Model;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import eu.seal.derivation.model.pojo.AttributeType;
@@ -18,6 +22,9 @@ import eu.seal.derivation.model.pojo.LinkRequest;
 
 
 public class DerivationServiceImpl {
+	
+	private final static Logger LOG = LoggerFactory.getLogger(DerivationServiceImpl.class);
+
 	
 	private SessionManagerClientImpl sessionManagerClient;
 	
@@ -82,11 +89,10 @@ public class DerivationServiceImpl {
 			
 			// Update the authenticatedSubject with the dataSet just generated
 			sessionManagerClient.updateSessionVariables(sessionId, sessionId, "authenticatedSubject", derivedDataSet);
-			
-			// Redirect to ClientCallbackAddr
-			// ****TOASK: to confirm
-		
+					
 		} catch (Exception e){
+			// TODO
+			// this.returnError
 			
 		}
 		
@@ -221,6 +227,44 @@ public class DerivationServiceImpl {
 		}
 		
 		return uniqueId;
+	}
+	
+	
+	public String returnSuccess (String sessionId, Model model) throws Exception 
+	{
+		String callbackAddress = null;
+		try
+		{
+			// Get the callbackAddress
+			callbackAddress = (String) sessionManagerClient.readVariable(sessionId, "ClientCallbackAddr");
+		
+			LOG.info ("UrlToRedirect: " + callbackAddress);
+			if (callbackAddress == null)
+			{
+				model.addAttribute("ErrorMessage","ClientCallbackAddr not found");
+				return "fatalError";
+			}
+				
+//			String tokenToX = "";
+//			tokenToX = sessionManagerClient.generateToken(sessionId, msName); 
+		
+//			model.addAttribute("msToken", tokenToX);
+			model.addAttribute("UrlToRedirect", callbackAddress);
+			
+			return "redirectform";
+		
+		}
+		catch (Exception ex)
+		{
+			String errorMsg= ex.getMessage()+"\n";
+			LOG.info ("Returning error: "+errorMsg);
+			
+			model.addAttribute("ErrorMessage",errorMsg);
+			if (callbackAddress != null) 
+	        	return "derivationError"; 
+	        else
+	        	return "fatalError"; // Unknown ClientCallbackAddr ...
+		}
 	}
 	
 	

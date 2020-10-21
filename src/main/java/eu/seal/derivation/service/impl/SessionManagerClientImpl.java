@@ -38,6 +38,7 @@ public class SessionManagerClientImpl {
 	private final NetworkService netServ;
 	private final KeyStoreService keyServ;
 	private final String sessionMngrURL;
+	private final String sender;
 	ObjectMapper mapper = new ObjectMapper();
 	
 	private final String URIUPDATENEWSESSION = "/sm/new/add";
@@ -50,6 +51,7 @@ public class SessionManagerClientImpl {
 		String fingerPrint = this.keyServ.getFingerPrint();
 		HttpSignatureService httpSigServ = new HttpSignatureServiceImpl(fingerPrint, signingKey);
 		this.netServ = new NetworkServiceImpl(httpSigServ);
+		this.sender = System.getenv("SENDER_ID");
 	}
 	
 	public SessionMngrResponse validateToken(String param, String msToken) throws NoSuchAlgorithmException, IOException {
@@ -212,6 +214,30 @@ public class SessionManagerClientImpl {
 	    	
 	    }
 	    return sessionVbles.get(variableName);
+	}
+	
+	public String generateToken(String sessionId, String receiver)
+	//(String sessionId, String sender, String receiver)
+			throws UnrecoverableKeyException, KeyStoreException, FileNotFoundException, NoSuchAlgorithmException,
+			CertificateException, InvalidKeySpecException, IOException
+	{
+		String service = "/sm/generateToken";
+		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+        urlParameters.add(new NameValuePair("sessionId",sessionId));
+        urlParameters.add(new NameValuePair("sender", sender)); 
+        urlParameters.add(new NameValuePair("receiver", receiver));
+        urlParameters.add(new NameValuePair("data", "extraData"));
+        
+        SessionMngrResponse smResponse = netServ.sendGetSMResponse(sessionMngrURL, service, urlParameters,1);
+        
+        String additionalData="";
+        //System.out.println("SMresponse(generateToken):" +smResponse.toString());
+        if ( smResponse.getCode()== ResponseCode.NEW)
+        {
+	        System.out.println( "addDAta:"+ smResponse.getAdditionalData());
+	        additionalData = smResponse.getAdditionalData();
+	    }
+        return additionalData; // Returns a token
 	}
 
 }
