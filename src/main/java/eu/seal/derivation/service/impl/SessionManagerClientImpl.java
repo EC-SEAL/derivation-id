@@ -2,7 +2,6 @@ package eu.seal.derivation.service.impl;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.security.Key;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -17,9 +16,6 @@ import java.util.UUID;
 import org.apache.commons.httpclient.NameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import eu.seal.derivation.enums.ResponseCode;
@@ -30,7 +26,6 @@ import eu.seal.derivation.service.HttpSignatureService;
 import eu.seal.derivation.service.KeyStoreService;
 import eu.seal.derivation.service.NetworkService;
 import eu.seal.derivation.model.pojo.UpdateDataRequest;
-
 
 public class SessionManagerClientImpl {
 	
@@ -107,11 +102,9 @@ public class SessionManagerClientImpl {
 	    	sessionVble = smResponse.getAdditionalData();
 	    	
 	    	LOG.info("sessionVble: "+ sessionVble.toString());
+	    	return sessionVble;
 	    }
-	    
-	    
-	    //return sessionVbles.get(variableName);
-	    return sessionVble;
+	    else return null;
 	}
 	
 	public Object getDataSet(String sessionId, String dataSetId) throws UnrecoverableKeyException, KeyStoreException, FileNotFoundException, NoSuchAlgorithmException, CertificateException, InvalidKeySpecException, IOException
@@ -143,25 +136,24 @@ public class SessionManagerClientImpl {
 	    	sessionVble = smResponse.getAdditionalData();
 	    	
 	    	LOG.info("sessionVble: "+ sessionVble.toString());
+	    	return sessionVble;
 	    }
+	    else return null;
 	    
-	    
-	    //return sessionVbles.get(variableName);
-	    return sessionVble;
 	}
 	
 	/**
 	 * Updates the dataStore session Variable
 	 */	
 	
-	public String updateDatastore(String sessionId, String objectId, Object updateObject) throws IOException, NoSuchAlgorithmException {
+	public String updateDatastore(String sessionId, String objectId, Object updateObject, String type) throws IOException, NoSuchAlgorithmException {
         ObjectMapper mapper = new ObjectMapper();
         String stringifiedObject = mapper.writeValueAsString(updateObject);
 
             NewUpdateDataRequest newReq = new NewUpdateDataRequest();
             newReq.setId(objectId);
             newReq.setSessionId(sessionId);
-            newReq.setType("dataSet");
+            newReq.setType(type);  // dataSet or linkRequest
             newReq.setData(stringifiedObject);
             String result = netServ.sendNewPostBody(sessionMngrURL, URIUPDATENEWSESSION, newReq, "application/json", 1);
             
@@ -197,8 +189,6 @@ public class SessionManagerClientImpl {
 	     
 	    SessionMngrResponse smResponse = null;
 	    try {
-	    	System.out.println("Enviando getSessionData");
-	    	//response = network.sendGet(hostURL, service, urlParameters);
 	    	smResponse = netServ.sendGetSMResponse(sessionMngrURL, service, urlParameters, 1);
 		} catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
@@ -211,9 +201,10 @@ public class SessionManagerClientImpl {
 	    if (smResponse.getCode()== ResponseCode.OK)
 	    {
 	    	sessionVbles = (HashMap<String, Object>) smResponse.getSessionData().getSessionVariables();
-	    	
+	    	return sessionVbles.get(variableName);
 	    }
-	    return sessionVbles.get(variableName);
+	    else return null;
+	    
 	}
 	
 	public String generateToken(String sessionId, String receiver)

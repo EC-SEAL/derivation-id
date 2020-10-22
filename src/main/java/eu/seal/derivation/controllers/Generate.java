@@ -3,18 +3,10 @@ package eu.seal.derivation.controllers;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import eu.seal.derivation.model.pojo.AttributeSet;
-import eu.seal.derivation.model.pojo.DataSet;
-import eu.seal.derivation.model.pojo.DataStore;
-import eu.seal.derivation.model.pojo.LinkRequest;
 import eu.seal.derivation.model.pojo.SessionMngrResponse;
-import eu.seal.derivation.model.pojo.UpdateDataRequest;
 import eu.seal.derivation.service.HttpSignatureService;
 import eu.seal.derivation.service.KeyStoreService;
 import eu.seal.derivation.service.NetworkService;
-import eu.seal.derivation.service.impl.AuthSetToDataSet;
 import eu.seal.derivation.service.impl.DerivationServiceImpl;
 import eu.seal.derivation.service.impl.HttpSignatureServiceImpl;
 import eu.seal.derivation.service.impl.NetworkServiceImpl;
@@ -27,17 +19,11 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.Log;
 import org.slf4j.Logger;	
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,13 +52,15 @@ public class Generate {
 	@Autowired
 	public Generate(KeyStoreService keyServ) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, UnsupportedEncodingException, InvalidKeySpecException, IOException {
 		this.keyServ = keyServ;
-		this.derivationService = new DerivationServiceImpl(System.getenv("EXPIRATION_WINDOW") == null ? Integer.parseInt("7"):Integer.parseInt(System.getenv("EXPIRATION_WINDOW")));
 		this.sessionManagerURL = System.getenv("SESSION_MANAGER_URL");
 		this.sessionManagerClient = new SessionManagerClientImpl(keyServ, sessionManagerURL);
 		Key signingKey = this.keyServ.getSigningKey();
 		String fingerPrint = this.keyServ.getFingerPrint();
 		HttpSignatureService httpSigServ = new HttpSignatureServiceImpl(fingerPrint, signingKey);
 		this.netServ = new NetworkServiceImpl(httpSigServ);
+		
+		this.derivationService = new DerivationServiceImpl( this.sessionManagerClient);
+		
 	}
 
 	
@@ -81,6 +69,8 @@ public class Generate {
 			HttpServletResponse response,
 			Model model
 			) throws KeyStoreException, JsonParseException, JsonMappingException, NoSuchAlgorithmException, IOException {
+		
+		String callbackAddress = null;
 		
 		try {
 		
@@ -91,19 +81,44 @@ public class Generate {
 				String sessionId = resp.getSessionData().getSessionId();
 				derivationService.generate(sessionId);
 	
-				derivationService.returnSuccess (sessionId, model);
+				// Get the callbackAddress
+				callbackAddress = (String) sessionManagerClient.readVariable(sessionId, "ClientCallbackAddr");
+			
+				LOG.info ("UrlToRedirect: " + callbackAddress);
+				if (callbackAddress == null)
+				{
+					model.addAttribute("ErrorMessage","ClientCallbackAddr not found");
+					return "fatalError";
+				}
+					
+//				String tokenToX = "";
+//				tokenToX = sessionManagerClient.generateToken(sessionId, msName); 
+//				model.addAttribute("msToken", "tokenToX");
+				model.addAttribute("UrlToRedirect", callbackAddress);
+				
+				LOG.info ("redirecting...");
+				return "redirectformGET";
 				
 			} else {
 				LOG.error(resp.getError());
 				redirectAttrs.addFlashAttribute("errorMsg", "Error validating token! " + resp.getError()); // TODO: what is this?
+				
+				String errorMsg= resp.getError()+"\n";
+				model.addAttribute("ErrorMessage",errorMsg);
+				return "derivationError"; 
 			}
 			
 		} catch (Exception e) {
-			// TODO
-			// derivationService.returnError
+			e.printStackTrace();
+			
+			String errorMsg= e.getMessage()+"\n";
+			model.addAttribute("ErrorMessage",errorMsg);
+			
+			return "derivationError"; 
 		}
 
-		return "Hello";
+		
 	}
+	
 }
 
