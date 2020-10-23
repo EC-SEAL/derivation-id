@@ -20,4 +20,7 @@ public interface NetworkService {
     
 	public String sendNewPostBody(String hostUrl, String uri, Object postBody, String contentType, int attempt)
 			throws IOException, NoSuchAlgorithmException;
+	
+	public SessionMngrResponse sendPostBodySMResponse (String hostUrl, String uri, Object postBody, String contentType, int attempt) 
+			throws IOException, NoSuchAlgorithmException;
 }

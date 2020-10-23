@@ -25,6 +25,7 @@ import eu.seal.derivation.model.pojo.SessionMngrResponse;
 import eu.seal.derivation.service.HttpSignatureService;
 import eu.seal.derivation.service.KeyStoreService;
 import eu.seal.derivation.service.NetworkService;
+import eu.seal.derivation.model.pojo.RequestParameters;
 import eu.seal.derivation.model.pojo.UpdateDataRequest;
 
 public class SessionManagerClientImpl {
@@ -79,15 +80,19 @@ public class SessionManagerClientImpl {
 		String service = "/sm/new/get";
 		//HashMap<String, Object> sessionVbles = new HashMap<String, Object>();
 		Object sessionVble = new Object();
+		String contentType = "application/json";
 		
-		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
-	    urlParameters.add(new NameValuePair("sessionId",sessionId));
+//		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+//	    urlParameters.add(new NameValuePair("sessionId",sessionId));
+	    
+	    RequestParameters requestParameters = new RequestParameters();
+        requestParameters.setSessionId(sessionId);
 	    
 	    SessionMngrResponse smResponse = null;
 	    try {
 	    	LOG.info("Sending new/get ...");
-	    	//response = network.sendGet(hostURL, service, urlParameters);
-	    	smResponse = netServ.sendGetSMResponse(sessionMngrURL, service, urlParameters, 1);
+	    	//smResponse = netServ.sendGetSMResponse(sessionMngrURL, service, urlParameters, 1);
+	    	smResponse = netServ.sendPostBodySMResponse(sessionMngrURL, service, requestParameters, contentType, 1);
 		} catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -112,16 +117,21 @@ public class SessionManagerClientImpl {
 		String service = "/sm/new/get";
 		//HashMap<String, Object> sessionVbles = new HashMap<String, Object>();
 		Object sessionVble = new Object();
+		String contentType = "application/json";
 		
 		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
 	    urlParameters.add(new NameValuePair("sessionId",sessionId));
 	    urlParameters.add(new NameValuePair("id",dataSetId));
 	    
+	    RequestParameters requestParameters = new RequestParameters();
+        requestParameters.setSessionId(sessionId);
+        requestParameters.setData(dataSetId);
+	    
 	    SessionMngrResponse smResponse = null;
 	    try {
 	    	LOG.info("Sending new/get DataSet ...");
-	    	//response = network.sendGet(hostURL, service, urlParameters);
-	    	smResponse = netServ.sendGetSMResponse(sessionMngrURL, service, urlParameters, 1);
+	    	//smResponse = netServ.sendGetSMResponse(sessionMngrURL, service, urlParameters, 1);
+	    	smResponse = netServ.sendPostBodySMResponse(sessionMngrURL, service, requestParameters, contentType, 1);
 		} catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -149,16 +159,20 @@ public class SessionManagerClientImpl {
 	public String updateDatastore(String sessionId, String objectId, Object updateObject, String type) throws IOException, NoSuchAlgorithmException {
         ObjectMapper mapper = new ObjectMapper();
         String stringifiedObject = mapper.writeValueAsString(updateObject);
+        
+        String contentType="application/json";
 
-            NewUpdateDataRequest newReq = new NewUpdateDataRequest();
-            newReq.setId(objectId);
-            newReq.setSessionId(sessionId);
-            newReq.setType(type);  // dataSet or linkRequest
-            newReq.setData(stringifiedObject);
-            String result = netServ.sendNewPostBody(sessionMngrURL, URIUPDATENEWSESSION, newReq, "application/json", 1);
+        NewUpdateDataRequest newReq = new NewUpdateDataRequest();
+        //newReq.setId(URLEncoder.encode(objectId, StandardCharsets.UTF_8.toString()));
+        newReq.setId(objectId);
+        newReq.setSessionId(sessionId);
+        newReq.setType("dataSet");
+        newReq.setData(stringifiedObject);
+        //String result = netServ.sendNewPostBody(sessionMngrURL, URIUPDATENEWSESSION, newReq, "application/json", 1);
+        String result = netServ.sendPostBody(sessionMngrURL, URIUPDATENEWSESSION, newReq, contentType, 1);
             
-            LOG.info("Result" + result);          
-            LOG.info("session " + sessionId + " updated NEW API Session succesfully  with objectID" + objectId + "  with user attributes " + stringifiedObject);
+        LOG.info("Result" + result);          
+        LOG.info("session " + sessionId + " updated NEW API Session succesfully  with objectID" + objectId + "  with user attributes " + stringifiedObject);
 
         return "ok";
     }
