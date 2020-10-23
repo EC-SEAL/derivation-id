@@ -166,7 +166,7 @@ public class SessionManagerClientImpl {
         //newReq.setId(URLEncoder.encode(objectId, StandardCharsets.UTF_8.toString()));
         newReq.setId(objectId);
         newReq.setSessionId(sessionId);
-        newReq.setType("dataSet");
+        newReq.setType(type);
         newReq.setData(stringifiedObject);
         //String result = netServ.sendNewPostBody(sessionMngrURL, URIUPDATENEWSESSION, newReq, "application/json", 1);
         String result = netServ.sendPostBody(sessionMngrURL, URIUPDATENEWSESSION, newReq, contentType, 1);
