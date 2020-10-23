@@ -83,9 +83,53 @@ public class DerivationServiceImpl {
 			// Create a new linked identity dataSet request with the sealUUID dataSet
 			// Linked to the current authenticatedSubject
 			
-			// Add the linked Id dataSet to the dataStore
-			LinkRequest linkedRequest = getLinkedRequest (derivedDataSet, authenticatedSubject); // Just linked
-			sessionManagerClient.updateDatastore(sessionId, linkedRequest.getId(), linkedRequest, "linkRequest");
+			//LinkRequest linkedRequest = getLinkedRequest (derivedDataSet, authenticatedSubject); // Just linked
+			LinkRequest resultLinkRequest = new LinkRequest();
+			// Sort dsA and dsB
+			DataSet datasetA = new DataSet();
+			DataSet datasetB = new DataSet();
+			if (derivedDataSet.getSubjectId().compareTo(authenticatedSubject.getSubjectId()) < 0) {
+				datasetA = derivedDataSet;
+				datasetB = authenticatedSubject;
+			}
+			else if (derivedDataSet.getSubjectId().compareTo(authenticatedSubject.getSubjectId()) > 0) {
+				datasetA = authenticatedSubject;
+				datasetB = derivedDataSet;
+			}
+			else //equals
+				if (derivedDataSet.getIssuerId().compareTo(authenticatedSubject.getIssuerId()) <= 0) {
+					datasetA = derivedDataSet;
+					datasetB = authenticatedSubject;
+				}
+				else {
+					datasetA = authenticatedSubject;
+					datasetB = derivedDataSet;
+				}
+			resultLinkRequest.setDatasetA(datasetA);
+			resultLinkRequest.setDatasetB(datasetB);
+			
+			resultLinkRequest.setId("LINK_" + UUID.randomUUID().toString());
+			resultLinkRequest.setIssuer(issuer);
+			resultLinkRequest.setLloa(loa);
+			resultLinkRequest.setIssued(new Date().toString());
+			resultLinkRequest.setType(linkRequestType);
+			
+			String storeEntryLnkId = "";
+			try {
+				storeEntryLnkId = "urn:mace:project-seal.eu:link:" + 
+						URLEncoder.encode("SEAL id-boot", StandardCharsets.UTF_8.toString()) + ":" + // TO ASK
+						//"LLoA" + ":" +
+						URLEncoder.encode(datasetA.getSubjectId(), StandardCharsets.UTF_8.toString()) + ":" + 
+						URLEncoder.encode(datasetA.getIssuerId(), StandardCharsets.UTF_8.toString())  + ":" +  
+						URLEncoder.encode(datasetB.getSubjectId(), StandardCharsets.UTF_8.toString()) + ":" + 
+						URLEncoder.encode(datasetB.getIssuerId(), StandardCharsets.UTF_8.toString());
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			// Add the linkRequest to the dataStore
+			sessionManagerClient.updateDatastore(sessionId, storeEntryLnkId, resultLinkRequest, "linkRequest");
 			
 			// Update the authenticatedSubject with the dataSet just generated
 			sessionManagerClient.updateSessionVariables(sessionId, sessionId, "authenticatedSubject", derivedDataSet);
@@ -98,64 +142,6 @@ public class DerivationServiceImpl {
 		}
 		
 	}
-	
-	/**
-	 * Returns a linkRequest given an existing dataSet
-	 * @param dataSetA first dataSet to be included in the LinkRequest
-	 * @param dataSetA second dataSet to be included in the LinkRequest
-	 * @return LinkRequest Object linking the existing dataSet to the recently created Dataset 
-	 */
-	public LinkRequest getLinkedRequest(DataSet dsA, DataSet dsB) {
-		LinkRequest resultLinkRequest = new LinkRequest();
-		
-		
-		// Sort dsA and dsB
-		DataSet datasetA = new DataSet();
-		DataSet datasetB = new DataSet();
-		if (dsA.getSubjectId().compareTo(dsB.getSubjectId()) < 0) {
-			datasetA = dsA;
-			datasetB = dsB;
-		}
-		else if (dsA.getSubjectId().compareTo(dsB.getSubjectId()) > 0) {
-			datasetA = dsB;
-			datasetB = dsA;
-		}
-		else //equals
-			if (dsA.getIssuerId().compareTo(dsB.getIssuerId()) <= 0) {
-				datasetA = dsA;
-				datasetB = dsB;
-			}
-			else {
-				datasetA = dsB;
-				datasetB = dsA;
-			}
-		resultLinkRequest.setDatasetA(datasetA);
-		resultLinkRequest.setDatasetB(datasetB);
-		
-//		try {
-//			resultLinkRequest.setId("urn:mace:project-seal.eu:link:" + 
-//					URLEncoder.encode("SEAL id-boot", StandardCharsets.UTF_8.toString()) + ":" + // TO ASK
-//					//"LLoA" + ":" +
-//					URLEncoder.encode(datasetA.getSubjectId(), StandardCharsets.UTF_8.toString()) + ":" + 
-//					URLEncoder.encode(datasetA.getIssuerId(), StandardCharsets.UTF_8.toString())  + ":" +  
-//					URLEncoder.encode(datasetB.getSubjectId(), StandardCharsets.UTF_8.toString()) + ":" + 
-//					URLEncoder.encode(datasetB.getIssuerId(), StandardCharsets.UTF_8.toString()));
-//		} catch (UnsupportedEncodingException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		
-		
-		resultLinkRequest.setId("LINK_" + UUID.randomUUID().toString());
-		resultLinkRequest.setIssuer(issuer);
-		resultLinkRequest.setLloa(loa);
-		resultLinkRequest.setIssued(new Date().toString());
-		resultLinkRequest.setType(linkRequestType);
-		
-		return resultLinkRequest;
-	}
-	
-	
 	
 	/**
 	 * Generates a new derived DataSet 
@@ -232,7 +218,63 @@ public class DerivationServiceImpl {
 		return uniqueId;
 	}
 	
-	
+//	/**
+//	 * Returns a linkRequest given an existing dataSet
+//	 * @param dataSetA first dataSet to be included in the LinkRequest
+//	 * @param dataSetA second dataSet to be included in the LinkRequest
+//	 * @return LinkRequest Object linking the existing dataSet to the recently created Dataset 
+//	 */
+//	public LinkRequest getLinkedRequest(DataSet dsA, DataSet dsB) {
+//		LinkRequest resultLinkRequest = new LinkRequest();
+//		
+//		
+//		// Sort dsA and dsB
+//		DataSet datasetA = new DataSet();
+//		DataSet datasetB = new DataSet();
+//		if (dsA.getSubjectId().compareTo(dsB.getSubjectId()) < 0) {
+//			datasetA = dsA;
+//			datasetB = dsB;
+//		}
+//		else if (dsA.getSubjectId().compareTo(dsB.getSubjectId()) > 0) {
+//			datasetA = dsB;
+//			datasetB = dsA;
+//		}
+//		else //equals
+//			if (dsA.getIssuerId().compareTo(dsB.getIssuerId()) <= 0) {
+//				datasetA = dsA;
+//				datasetB = dsB;
+//			}
+//			else {
+//				datasetA = dsB;
+//				datasetB = dsA;
+//			}
+//		resultLinkRequest.setDatasetA(datasetA);
+//		resultLinkRequest.setDatasetB(datasetB);
+//		
+//		
+//		
+//		resultLinkRequest.setId("LINK_" + UUID.randomUUID().toString());
+//		resultLinkRequest.setIssuer(issuer);
+//		resultLinkRequest.setLloa(loa);
+//		resultLinkRequest.setIssued(new Date().toString());
+//		resultLinkRequest.setType(linkRequestType);
+//		
+//		String storeEntryLnkId = "";
+//		try {
+//			storeEntryLnkId = "urn:mace:project-seal.eu:link:" + 
+//					URLEncoder.encode("SEAL id-boot", StandardCharsets.UTF_8.toString()) + ":" + // TO ASK
+//					//"LLoA" + ":" +
+//					URLEncoder.encode(datasetA.getSubjectId(), StandardCharsets.UTF_8.toString()) + ":" + 
+//					URLEncoder.encode(datasetA.getIssuerId(), StandardCharsets.UTF_8.toString())  + ":" +  
+//					URLEncoder.encode(datasetB.getSubjectId(), StandardCharsets.UTF_8.toString()) + ":" + 
+//					URLEncoder.encode(datasetB.getIssuerId(), StandardCharsets.UTF_8.toString());
+//		} catch (UnsupportedEncodingException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		
+//		return resultLinkRequest;
+//	}	
 
 	
 	
