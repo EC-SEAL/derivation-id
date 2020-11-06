@@ -39,7 +39,7 @@ public class DerivationServiceImpl {
 	
 	//LinkRequestAttribbutes
 	private final String issuerId = System.getenv("ISSUER_ID") == null ? "https://vm.project-seal.eu/" : System.getenv("ISSUER_ID");
-	private final String subjectId = System.getenv("SUBJECT_ID") == null ? "sealUUID" : System.getenv("SUBJECT_ID");
+	private final String subjectId = System.getenv("UUID_FRIENDLY_NAME") == null ? "sealUUID" : System.getenv("UUID_FRIENDLY_NAME");
 	private final String derivedDatasetType = System.getenv("DERIVED_DATASET_TYPE") == null ? "derivedID" : System.getenv("DERIVED_DATASET_TYPE");
 	private final String issuer = System.getenv("ISSUER") == null ? "SEAL Automated Linker" : System.getenv("ISSUER");
 	private final String linkRequestType = System.getenv("LINK_REQUEST_TYPE") == null ? "linkedID" :System.getenv("LINK_REQUEST_TYPE");
@@ -127,6 +127,7 @@ public class DerivationServiceImpl {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			LOG.info("storeEntryLnkId: " + storeEntryLnkId);
 			
 			// Add the linkRequest to the dataStore
 			sessionManagerClient.updateDatastore(sessionId, storeEntryLnkId, resultLinkRequest, "linkRequest");
@@ -156,12 +157,32 @@ public class DerivationServiceImpl {
         derivedDataSet.setId("DRV_" + UUID.randomUUID().toString());   // TODO: random UUIDv4 generation module!!??
 		derivedDataSet.setType(derivedDatasetType);
 		derivedDataSet.setCategories(derivedIdcategories);
-		derivedDataSet.setIssuerId(issuerId);
-		derivedDataSet.setSubjectId(subjectId);
+		derivedDataSet.setIssuerId("issuerEntityId");
+		derivedDataSet.setSubjectId(subjectId);  // Pointing to sealUUIDAttribteType.
 		derivedDataSet.setLoa(loa);
 		derivedDataSet.setIssued(issued.toString());
 		derivedDataSet.setExpiration(expiration.toString());
+		
 		attributes.add(sealUUIDAttributeType());
+		
+		AttributeType issuerAttr = new AttributeType();
+		issuerAttr.setName("issuerEntityId");
+		issuerAttr.setFriendlyName("issuerEntityId");
+		List<String> issuerValues = new ArrayList<String>();
+		issuerValues.add (issuerId);
+		issuerAttr.setValues(issuerValues.toArray(new String[0]));
+		
+		attributes.add(issuerAttr);
+		
+//		AttributeType issuerAttr2 = new AttributeType();
+//		issuerAttr2.setName("subjectId");
+//		issuerAttr2.setFriendlyName("subjectId");
+//		List<String> issuerValues2 = new ArrayList<String>();
+//		issuerValues2.add (subjectId);
+//		issuerAttr2.setValues(issuerValues2.toArray(new String[0]));
+//		
+//		attributes.add(issuerAttr2);
+		
 		derivedDataSet.setAttributes(attributes);
 		return derivedDataSet;
 		
