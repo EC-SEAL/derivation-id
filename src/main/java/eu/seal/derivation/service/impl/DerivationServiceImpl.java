@@ -72,7 +72,7 @@ public class DerivationServiceImpl {
 			DataSet derivedDataSet = createNewDataSet();
 			
 			// Add the sealUUID dataSet to the dataStore		
-			String objectId = getUniqueIdForDerivation(derivedDataSet); //TODO : ****TOASK
+			String objectId = getUniqueIdForDerivation(derivedDataSet); 
 			sessionManagerClient.updateDatastore(sessionId, objectId, derivedDataSet, "dataSet");
 			
 			Object objAuthenticatedSubject = null;
@@ -154,7 +154,7 @@ public class DerivationServiceImpl {
         Date expiration = getExpirationDate(issued, expirationWindow);
         List<AttributeType> attributes = new ArrayList<>();
 	
-        derivedDataSet.setId("DRV_" + UUID.randomUUID().toString());   // TODO: random UUIDv4 generation module!!??
+        derivedDataSet.setId("DRV_" + UUID.randomUUID().toString());  
 		derivedDataSet.setType(derivedDatasetType);
 		derivedDataSet.setCategories(derivedIdcategories);
 		derivedDataSet.setIssuerId("issuerEntityId");
@@ -200,7 +200,7 @@ public class DerivationServiceImpl {
 		sealUUIDAttributeType.setFriendlyName(uuidFriendlyName);
 		sealUUIDAttributeType.setEncoding(attributeEncoding);
 		sealUUIDAttributeType.setLanguage(language);
-		sealUUIDAttributeType.setIsMandatory(mandatory);
+		sealUUIDAttributeType.setMandatory(mandatory);
 		values[0]=UUID.randomUUID().toString();
 		sealUUIDAttributeType.setValues(values);
 		return sealUUIDAttributeType;
@@ -239,64 +239,6 @@ public class DerivationServiceImpl {
 		return uniqueId;
 	}
 	
-//	/**
-//	 * Returns a linkRequest given an existing dataSet
-//	 * @param dataSetA first dataSet to be included in the LinkRequest
-//	 * @param dataSetA second dataSet to be included in the LinkRequest
-//	 * @return LinkRequest Object linking the existing dataSet to the recently created Dataset 
-//	 */
-//	public LinkRequest getLinkedRequest(DataSet dsA, DataSet dsB) {
-//		LinkRequest resultLinkRequest = new LinkRequest();
-//		
-//		
-//		// Sort dsA and dsB
-//		DataSet datasetA = new DataSet();
-//		DataSet datasetB = new DataSet();
-//		if (dsA.getSubjectId().compareTo(dsB.getSubjectId()) < 0) {
-//			datasetA = dsA;
-//			datasetB = dsB;
-//		}
-//		else if (dsA.getSubjectId().compareTo(dsB.getSubjectId()) > 0) {
-//			datasetA = dsB;
-//			datasetB = dsA;
-//		}
-//		else //equals
-//			if (dsA.getIssuerId().compareTo(dsB.getIssuerId()) <= 0) {
-//				datasetA = dsA;
-//				datasetB = dsB;
-//			}
-//			else {
-//				datasetA = dsB;
-//				datasetB = dsA;
-//			}
-//		resultLinkRequest.setDatasetA(datasetA);
-//		resultLinkRequest.setDatasetB(datasetB);
-//		
-//		
-//		
-//		resultLinkRequest.setId("LINK_" + UUID.randomUUID().toString());
-//		resultLinkRequest.setIssuer(issuer);
-//		resultLinkRequest.setLloa(loa);
-//		resultLinkRequest.setIssued(new Date().toString());
-//		resultLinkRequest.setType(linkRequestType);
-//		
-//		String storeEntryLnkId = "";
-//		try {
-//			storeEntryLnkId = "urn:mace:project-seal.eu:link:" + 
-//					URLEncoder.encode("SEAL id-boot", StandardCharsets.UTF_8.toString()) + ":" + // TO ASK
-//					//"LLoA" + ":" +
-//					URLEncoder.encode(datasetA.getSubjectId(), StandardCharsets.UTF_8.toString()) + ":" + 
-//					URLEncoder.encode(datasetA.getIssuerId(), StandardCharsets.UTF_8.toString())  + ":" +  
-//					URLEncoder.encode(datasetB.getSubjectId(), StandardCharsets.UTF_8.toString()) + ":" + 
-//					URLEncoder.encode(datasetB.getIssuerId(), StandardCharsets.UTF_8.toString());
-//		} catch (UnsupportedEncodingException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		
-//		return resultLinkRequest;
-//	}	
-
 	
 	
 }
