@@ -29,14 +29,14 @@ The following environmental variables need to be set prior to running the projec
 The following variables are related to the derived identity
 | EXPIRATION_WINDOW | Expiration window in days (7 days by default).
 | ISSUER_ID | "https://vm.project-seal.eu/" by default
-| SUBJECT_ID | "sealUUID" by default
 | DERIVED_DATASET_TYPE | "derivedID" by default
 | ISSUER | "SEAL Automated Linker" by default
 | LINK_REQUEST_TYPE | "linkedID" by default
 | LOA | 4 by default
 | DERIVED_ID_CATEGORIES | "UUID4" by default
-| UUID_FRIENDLY_NAME | "sealUUID" by default
+| UUID_FRIENDLY_NAME | "sealUUID" by default. This is the subjectId
 | UUID_ATTR_NAME | "http://project-seal.eu/2020/id/sealUUID" by default
+| UUID_LANGUAGE | null by default
 | ATTRIBUTE_ENCODING | "plain" by default
 | MANDATORY | true by default
 

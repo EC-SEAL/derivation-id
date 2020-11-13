@@ -30,6 +30,7 @@ public class DerivationServiceImpl {
 	private int expirationWindow = System.getenv("EXPIRATION_WINDOW") == null ? Integer.parseInt("7"):Integer.parseInt(System.getenv("EXPIRATION_WINDOW"));
 	
 	// Seal attributes
+	//private final String subjectId = System.getenv("UUID_FRIENDLY_NAME") == null ? "sealUUID" : System.getenv("UUID_FRIENDLY_NAME");
 	private static final String uuidFriendlyName = System.getenv("UUID_FRIENDLY_NAME")== null ? "sealUUID" : System.getenv("UUID_FRIENDLY_NAME");
 	private static final String uuidAttrName = System.getenv("UUID_ATTR_NAME")== null ? "http://project-seal.eu/2020/id/sealUUID" : System.getenv("UUID_ATTR_NAME");	
 	private final String attributeEncoding = System.getenv("ATTRIBUTE_ENCODING")== null ? "plain" : System.getenv("ATTRIBUTE_ENCODING");
@@ -38,14 +39,13 @@ public class DerivationServiceImpl {
 	private final String senderId = System.getenv("SENDER_ID") == null ? "uuid_ms001": System.getenv("SENDER_ID");
 	
 	//LinkRequestAttribbutes
-	private final String issuerId = System.getenv("ISSUER_ID") == null ? "https://vm.project-seal.eu/" : System.getenv("ISSUER_ID");
-	private final String subjectId = System.getenv("UUID_FRIENDLY_NAME") == null ? "sealUUID" : System.getenv("UUID_FRIENDLY_NAME");
+	private final String issuerIdContent = System.getenv("ISSUER_ID") == null ? "https://vm.project-seal.eu/" : System.getenv("ISSUER_ID");
 	private final String derivedDatasetType = System.getenv("DERIVED_DATASET_TYPE") == null ? "derivedID" : System.getenv("DERIVED_DATASET_TYPE");
 	private final String issuer = System.getenv("ISSUER") == null ? "SEAL Automated Linker" : System.getenv("ISSUER");
 	private final String linkRequestType = System.getenv("LINK_REQUEST_TYPE") == null ? "linkedID" :System.getenv("LINK_REQUEST_TYPE");
 	private final List<String> derivedIdcategories =System.getenv("DERIVED_ID_CATEGORIES") == null ?  Arrays.asList("UUID4") : Arrays.asList(System.getenv("DERIVED_ID_CATEGORIES"));
 	private final String loa = System.getenv("LOA") == null ? "4" : System.getenv("LOA");
-	private final String language = System.getenv("UUID_FRIENDLY_NAME")== null ? "null" : System.getenv("UUID_FRIENDLY_NAME");
+	private final String language = System.getenv("UUID_LANGUAGE")== null ? "null" : System.getenv("UUID_LANGUAGE");
 	
 	//// Variable ///
 	
@@ -158,7 +158,7 @@ public class DerivationServiceImpl {
 		derivedDataSet.setType(derivedDatasetType);
 		derivedDataSet.setCategories(derivedIdcategories);
 		derivedDataSet.setIssuerId("issuerEntityId");
-		derivedDataSet.setSubjectId(subjectId);  // Pointing to sealUUIDAttribteType.
+		derivedDataSet.setSubjectId(uuidFriendlyName);  // Pointing to sealUUIDAttributeType.
 		derivedDataSet.setLoa(loa);
 		derivedDataSet.setIssued(issued.toString());
 		derivedDataSet.setExpiration(expiration.toString());
@@ -169,20 +169,11 @@ public class DerivationServiceImpl {
 		issuerAttr.setName("issuerEntityId");
 		issuerAttr.setFriendlyName("issuerEntityId");
 		List<String> issuerValues = new ArrayList<String>();
-		issuerValues.add (issuerId);
+		issuerValues.add (issuerIdContent);
 		issuerAttr.setValues(issuerValues.toArray(new String[0]));
 		
 		attributes.add(issuerAttr);
-		
-//		AttributeType issuerAttr2 = new AttributeType();
-//		issuerAttr2.setName("subjectId");
-//		issuerAttr2.setFriendlyName("subjectId");
-//		List<String> issuerValues2 = new ArrayList<String>();
-//		issuerValues2.add (subjectId);
-//		issuerAttr2.setValues(issuerValues2.toArray(new String[0]));
-//		
-//		attributes.add(issuerAttr2);
-		
+				
 		derivedDataSet.setAttributes(attributes);
 		return derivedDataSet;
 		
