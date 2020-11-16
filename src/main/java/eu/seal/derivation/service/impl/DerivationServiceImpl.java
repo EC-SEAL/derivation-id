@@ -88,16 +88,22 @@ public class DerivationServiceImpl {
 			// Sort dsA and dsB
 			DataSet datasetA = new DataSet();
 			DataSet datasetB = new DataSet();
-			if (derivedDataSet.getSubjectId().compareTo(authenticatedSubject.getSubjectId()) < 0) {
+			if (//derivedDataSet.getSubjectId().compareTo(authenticatedSubject.getSubjectId()) < 0) {
+				getSubjectIdLnk(derivedDataSet.getAttributes(), derivedDataSet.getSubjectId()).
+				compareTo(getSubjectIdLnk(authenticatedSubject.getAttributes(), authenticatedSubject.getSubjectId() )) < 0) {
 				datasetA = derivedDataSet;
 				datasetB = authenticatedSubject;
 			}
-			else if (derivedDataSet.getSubjectId().compareTo(authenticatedSubject.getSubjectId()) > 0) {
+			else if (//derivedDataSet.getSubjectId().compareTo(authenticatedSubject.getSubjectId()) > 0) {
+					getSubjectIdLnk(derivedDataSet.getAttributes(), derivedDataSet.getSubjectId()).
+					compareTo(getSubjectIdLnk(authenticatedSubject.getAttributes(), authenticatedSubject.getSubjectId() )) > 0) {
 				datasetA = authenticatedSubject;
 				datasetB = derivedDataSet;
 			}
 			else //equals
-				if (derivedDataSet.getIssuerId().compareTo(authenticatedSubject.getIssuerId()) <= 0) {
+				if (//derivedDataSet.getIssuerId().compareTo(authenticatedSubject.getIssuerId()) <= 0) {
+					getIssuerIdLnk(derivedDataSet.getAttributes(), derivedDataSet.getIssuerId()).
+					compareTo(getIssuerIdLnk(authenticatedSubject.getAttributes(), authenticatedSubject.getIssuerId() )) <= 0) {
 					datasetA = derivedDataSet;
 					datasetB = authenticatedSubject;
 				}
@@ -119,10 +125,10 @@ public class DerivationServiceImpl {
 				storeEntryLnkId = "urn:mace:project-seal.eu:link:" + 
 						URLEncoder.encode("SEAL id-boot", StandardCharsets.UTF_8.toString()) + ":" + // TO ASK
 						//"LLoA" + ":" +
-						URLEncoder.encode(datasetA.getSubjectId(), StandardCharsets.UTF_8.toString()) + ":" + 
-						URLEncoder.encode(datasetA.getIssuerId(), StandardCharsets.UTF_8.toString())  + ":" +  
-						URLEncoder.encode(datasetB.getSubjectId(), StandardCharsets.UTF_8.toString()) + ":" + 
-						URLEncoder.encode(datasetB.getIssuerId(), StandardCharsets.UTF_8.toString());
+						URLEncoder.encode(getSubjectIdLnk(datasetA.getAttributes(), datasetA.getSubjectId()), StandardCharsets.UTF_8.toString()) + ":" + 
+						URLEncoder.encode(getIssuerIdLnk(datasetA.getAttributes(), datasetA.getIssuerId()), StandardCharsets.UTF_8.toString())  + ":" +  
+						URLEncoder.encode(getSubjectIdLnk(datasetB.getAttributes(), datasetB.getSubjectId()), StandardCharsets.UTF_8.toString()) + ":" + 
+						URLEncoder.encode(getIssuerIdLnk(datasetB.getAttributes(), datasetB.getIssuerId()), StandardCharsets.UTF_8.toString());
 			} catch (UnsupportedEncodingException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -215,8 +221,10 @@ public class DerivationServiceImpl {
 			uniqueId = uniqueId + 
 					URLEncoder.encode(moduleId, StandardCharsets.UTF_8.toString());
 		
-			String auxIssuer = drvDataSet.getIssuerId();
-			String auxSubject = drvDataSet.getSubjectId();
+			String auxIssuer = //drvDataSet.getIssuerId();
+					getIssuerIdLnk(drvDataSet.getAttributes(), drvDataSet.getIssuerId());
+			String auxSubject = //drvDataSet.getSubjectId();
+					getSubjectIdLnk(drvDataSet.getAttributes(), drvDataSet.getSubjectId());
 			
 			uniqueId = uniqueId + ":" + 
 					URLEncoder.encode(auxIssuer, StandardCharsets.UTF_8.toString()) + ":" + 
@@ -229,6 +237,38 @@ public class DerivationServiceImpl {
 		
 		return uniqueId;
 	}
+	
+	  private String getSubjectIdLnk(List<AttributeType> attributes, String subjectId) {
+		  String theSubjectId = null;
+		  
+		  for (AttributeType attr: attributes) {
+			  if ((attr.getFriendlyName() != null) && 
+				 (attr.getFriendlyName().contains (subjectId))){
+				  
+				  theSubjectId = attr.getValues()[0];
+				  break;
+			  }
+		  }
+		  
+		  return (theSubjectId != null ? theSubjectId : subjectId);
+	  
+	  }
+	  
+		private String getIssuerIdLnk(List<AttributeType> attributes, String issuerId) {
+		  String theIssuerId = null;
+		  
+		  for (AttributeType attr: attributes) {
+			  if ((attr.getFriendlyName() != null) && 
+				 (attr.getFriendlyName().contains (issuerId))){
+				  
+				  theIssuerId = attr.getValues()[0];
+				  break;
+			  }
+		  }
+		  
+		  return (theIssuerId != null ? theIssuerId : issuerId);
+		
+		}
 	
 	
 	
