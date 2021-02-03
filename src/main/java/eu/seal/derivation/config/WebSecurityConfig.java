@@ -28,12 +28,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements I
     protected void configure(HttpSecurity http) throws Exception {    
         http        
             .authorizeRequests()
-           		.antMatchers("*").permitAll()
+           		//.antMatchers("*").permitAll()
            		//.antMatchers("/as/*").permitAll()
            		.antMatchers("/idboot/*").permitAll()
-           		.antMatchers("/start/**").permitAll()
-           		.antMatchers("/generate/*").permitAll()
-           		.antMatchers("/saml/**").permitAll()
+           		//.antMatchers("/start/**").permitAll()
+           		//.antMatchers("/generate/*").permitAll()
+           		//.antMatchers("/saml/**").permitAll()
            		.antMatchers("/css/**").permitAll()
            		.antMatchers("/img/**").permitAll()
            		.antMatchers("/js/**").permitAll();
@@ -41,6 +41,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter implements I
         http
         		.logout()
         			.disable();	
+        http
+				.csrf()
+					.disable();
     }
 
 	@Override
